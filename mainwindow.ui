@@ -23,59 +23,25 @@
       <property name="verticalSpacing">
        <number>11</number>
       </property>
-      <item row="6" column="0">
-       <widget class="QProgressBar" name="convertProgressBar">
-        <property name="enabled">
-         <bool>true</bool>
-        </property>
-        <property name="value">
-         <number>1</number>
-        </property>
-        <property name="textVisible">
-         <bool>true</bool>
-        </property>
-        <property name="invertedAppearance">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QListView" name="listView"/>
-      </item>
-      <item row="10" column="0">
-       <layout class="QHBoxLayout" name="horizontalLayout_4">
-        <item>
-         <widget class="QPushButton" name="runButton">
-          <property name="text">
-           <string>Run</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="toTrayButton">
-          <property name="text">
-           <string>Hide to tray</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="closeButton">
-          <property name="text">
-           <string>Close</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item row="3" column="0">
-       <widget class="QPushButton" name="addGifButton">
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_2">
         <property name="text">
-         <string>Add new gif</string>
+         <string>Wallpapers</string>
         </property>
        </widget>
       </item>
-      <item row="9" column="0">
-       <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="9,1">
+      <item row="7" column="0">
+       <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,9,0,1">
+        <item>
+         <widget class="QLabel" name="label">
+          <property name="text">
+           <string>Faster</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
         <item>
          <widget class="QSlider" name="speedSlider">
           <property name="maximum">
@@ -90,16 +56,84 @@
          </widget>
         </item>
         <item>
+         <widget class="QLabel" name="label_3">
+          <property name="text">
+           <string>Slower</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QLineEdit" name="speedEdit"/>
         </item>
        </layout>
       </item>
-      <item row="0" column="0">
-       <widget class="QLabel" name="label_2">
-        <property name="text">
-         <string>Wallpapers</string>
+      <item row="8" column="0">
+       <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <item>
+         <layout class="QGridLayout" name="gridLayout_3">
+          <item row="1" column="0">
+           <widget class="QPushButton" name="stopButton">
+            <property name="text">
+             <string>Stop</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QPushButton" name="runButton">
+            <property name="text">
+             <string>Run</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QGridLayout" name="gridLayout_4">
+          <item row="1" column="0">
+           <widget class="QPushButton" name="closeButton">
+            <property name="text">
+             <string>Close</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QPushButton" name="toTrayButton">
+            <property name="text">
+             <string>Hide to tray</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </item>
+      <item row="1" column="0">
+       <widget class="QListView" name="wallpapersListView">
+        <property name="editTriggers">
+         <set>QAbstractItemView::NoEditTriggers</set>
         </property>
        </widget>
+      </item>
+      <item row="2" column="0">
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <item>
+         <widget class="QPushButton" name="importBmpButton">
+          <property name="text">
+           <string>Import as BMP</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="importFromGifButton">
+          <property name="text">
+           <string>Import as GIF</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
      </layout>
     </item>
@@ -111,14 +145,22 @@
      <x>0</x>
      <y>0</y>
      <width>660</width>
-     <height>22</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuMenu">
     <property name="title">
      <string>Menu</string>
     </property>
-    <addaction name="actionAdd_wallpapers"/>
+    <widget class="QMenu" name="menuAdd_wallpapers">
+     <property name="title">
+      <string>Add wallpapers</string>
+     </property>
+     <addaction name="actionImport_GIF"/>
+     <addaction name="actionImport_BMP"/>
+    </widget>
+    <addaction name="menuAdd_wallpapers"/>
+    <addaction name="actionSettings"/>
     <addaction name="actionHide_to_tray"/>
     <addaction name="separator"/>
     <addaction name="actionQuit"/>
@@ -146,14 +188,22 @@
     <string>Quit</string>
    </property>
   </action>
-  <action name="actionAdd_wallpapers">
+  <action name="actionImport_GIF">
    <property name="text">
-    <string>Add wallpapers</string>
+    <string>Import GIF</string>
+   </property>
+  </action>
+  <action name="actionImport_BMP">
+   <property name="text">
+    <string>Import BMP</string>
+   </property>
+  </action>
+  <action name="actionSettings">
+   <property name="text">
+    <string>Settings</string>
    </property>
   </action>
  </widget>
- <resources>
-  <include location="resource.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

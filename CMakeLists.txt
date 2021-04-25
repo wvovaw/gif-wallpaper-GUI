@@ -27,7 +27,11 @@ find_package(QT NAMES Qt6 Qt5 COMPONENTS Widgets LinguistTools REQUIRED)
 find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets LinguistTools REQUIRED)
 
 set(TS_FILES gif-wallpaper-gui_ru_RU.ts)
-set(APP_ICON_RESOURCE_WINDOWS "${CMAKE_CURRENT_SOURCE_DIR}/resources.qrc")
+
+set(app_WINRC app_win.rc)
+set_property(SOURCE app_win.rc APPEND PROPERTY
+      OBJECT_DEPENDS ${PROJECT_SOURCE_DIR}/icon.ico
+)
 
 set(PROJECT_SOURCES
         main.cpp
@@ -35,6 +39,7 @@ set(PROJECT_SOURCES
         mainwindow.h
         mainwindow.ui
         resources.qrc
+        ${app_WINRC}
         ${TS_FILES}
 )
 
