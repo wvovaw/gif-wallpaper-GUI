@@ -1,0 +1,13 @@
+# Generates installer wizard tool for Gif-Wallpaper
+
+## Step by step
+
+- Copy new release of gif-wallpaper to the packages/gw
+- Copy new release of gif-wallpaper-gui to the packages/gw-gui
+- Edit the package.xml files if it is necessary
+- Run the command as bellow from installer directyry
+Generate installer with:
+
+```cmd
+binarycreator -c config/config.xml -p packages installer
+```

@@ -19,19 +19,19 @@ MainWindow::MainWindow(QWidget *parent)
   , ui(new Ui::MainWindow)
 {
   ui->setupUi(this);
-  ui->speedSlider->setRange(minDelay, maxDelay);
-  ui->speedSlider->setSliderPosition(delayBetweenFrames);
-  ui->speedEdit->setText(QString::number(delayBetweenFrames));
-  CheckForDependencies();
+  ui->delaySlider->setRange(minDelay, maxDelay);
+  ui->delaySlider->setSliderPosition(delayBetweenFrames);
+  ui->delayEdit->setText(QString::number(delayBetweenFrames));
   CreateSystemTrayIcon();
   InitWallpapersList();
 }
 
 MainWindow::~MainWindow()
 {
-  gif_wallpaper->close();
+  StopGifWallpaperProcess();
   delete gif_wallpaper;
   delete wallpapersListModel;
+  delete wallListIterator;
   delete ui;
 }
 
@@ -49,7 +49,6 @@ void MainWindow::on_clickSystemTrayIcon(QSystemTrayIcon::ActivationReason r)
 
 void MainWindow::on_closeButton_clicked()
 {
-  gif_wallpaper->close();
   QApplication::exit(0);
 }
 
@@ -72,7 +71,7 @@ void MainWindow::on_runButton_clicked()
 {
   if (selectedWallpaperPath.isEmpty()) {
     QMessageBox msg(this);
-    msg.setText("Select a wallpaper");
+    msg.setText(tr("Select a wallpaper"));
     msg.exec();
   }
   else {
@@ -83,6 +82,7 @@ void MainWindow::on_runButton_clicked()
 void MainWindow::on_wallpapersListView_pressed(const QModelIndex &index)
 {
   auto itemText = index.data(Qt::DisplayRole).toString();
+  selectedWallpaperName = itemText;
   selectedWallpaperPath = QDir::toNativeSeparators(wallpapersDirectory + QDir::separator() + itemText);
 }
 
@@ -93,21 +93,51 @@ void MainWindow::on_wallpapersListView_doubleClicked()
 
 void MainWindow::on_stopButton_clicked()
 {
-   gif_wallpaper->close();
+  StopGifWallpaperProcess();
 }
 
-void MainWindow::on_speedSlider_valueChanged(int value)
+void MainWindow::on_delaySlider_valueChanged(int value)
 {
   delayBetweenFrames = value;
-  ui->speedEdit->setText(QString::number(delayBetweenFrames));
+  ui->delayEdit->setText(QString::number(delayBetweenFrames));
 }
 
+void MainWindow::on_removeWalpaper_clicked()
+{
+  if (selectedWallpaperPath.isEmpty()) {
+    QMessageBox msg(this);
+    msg.setText(tr("Select a wallpaper to remove"));
+    msg.exec();
+    return;
+  }
+  QString dirName = selectedWallpaperName;
+  auto ans =  QMessageBox::question(this,
+                                    tr("Are you sure?"),
+                                    tr("Remove \"") + dirName + "\" ?",
+                                    QMessageBox::Yes | QMessageBox::No
+                                    );
+  if (ans == QMessageBox::Yes) {
+    QDir dir(selectedWallpaperPath);
+    dir.removeRecursively();
+    UpdateWallpaperListView();
+  }
+}
 
 /* Actions */
 
+void MainWindow::on_actionPath_to_Imagemagick_triggered()
+{
+  LocateMagick();
+}
+
+void MainWindow::on_actionPath_to_gif_wallpaper_triggered()
+{
+  LocateGifWallpaper();
+}
+
+
 void MainWindow::on_actionQuit_triggered()
 {
-  gif_wallpaper->close();
   QApplication::exit(0);
 }
 
@@ -126,12 +156,15 @@ void MainWindow::on_actionImport_GIF_triggered()
   ImportGIF();
 }
 
-void MainWindow::on_actionSettings_triggered()
-{
-  // TODO: Open dialog with 2 inputs: Path to magick.exe and to gw.exe. 2 inputs, 2 buttons that open FileDialog
-}
-
 /* Procedures */
+
+void MainWindow::StopGifWallpaperProcess() {
+  if (gif_wallpaper != nullptr) {
+    gif_wallpaper->close();
+    delete gif_wallpaper;
+    gif_wallpaper = nullptr;
+  }
+}
 
 void MainWindow::CreateSystemTrayIcon()
 {
@@ -141,21 +174,38 @@ void MainWindow::CreateSystemTrayIcon()
   QAction *stopWallpaperAction = new QAction(QStringLiteral("Stop"));
   QAction *exitAction = new QAction(QStringLiteral("Exit"));
 
+  // FIXME: After next/prev or prev/next actions it runs the same wallpaper
   connect(nextWallpaperAction, &QAction::triggered, this, [=]()
   {
-    // TODO: next wallpaper form wallpapersListModel
+    QString n;
+    if (wallListIterator->hasNext()) {
+      selectedWallpaperName = wallListIterator->peekNext();
+      n = QDir::toNativeSeparators(wallpapersDirectory + QDir::separator() + wallListIterator->next());
+    }
+    else {
+      wallListIterator->toFront();
+      selectedWallpaperName = wallListIterator->peekNext();
+      n = QDir::toNativeSeparators(wallpapersDirectory + QDir::separator() + wallListIterator->next());
+    }
+    RunGifWallpaperProcess(n);
   });
   connect(previousWallpaperAction, &QAction::triggered, this, [=]()
   {
-    // TODO: prev wallpaper from wallpapersListModel
+    QString p;
+    if (wallListIterator->hasPrevious()) {
+      selectedWallpaperName = wallListIterator->peekPrevious();
+      p = QDir::toNativeSeparators(wallpapersDirectory + QDir::separator() + wallListIterator->previous());
+    }
+    else {
+      wallListIterator->toBack();
+      selectedWallpaperName = wallListIterator->peekPrevious();
+      p = QDir::toNativeSeparators(wallpapersDirectory + QDir::separator() + wallListIterator->previous());
+    }
+    RunGifWallpaperProcess(p);
   });
   connect(stopWallpaperAction, &QAction::triggered, this, [=]()
   {
-    if (gif_wallpaper != nullptr) {
-      gif_wallpaper->close();
-      delete gif_wallpaper;
-      gif_wallpaper = nullptr;
-    }
+    StopGifWallpaperProcess();
   });
   connect(showAction, &QAction::triggered, this, [=]()
   {
@@ -217,6 +267,7 @@ void MainWindow::UpdateWallpaperListView() {
       l.append(fileInfo.fileName());
     }
     wallpapersListModel->setStringList(l);
+    wallListIterator = new QListIterator<QString>(wallpapersListModel->stringList());
     ui->wallpapersListView->setModel(wallpapersListModel);
 }
 
@@ -230,7 +281,31 @@ void MainWindow::RunConvertProcess(QString gifPath, QString destPath) {
   args << "convert" << "-coalesce" << pathToGif << pathToBmp;
   QProcess *convert = new QProcess();
   try {
-    // TODO: Check if the command exists, if not, say user to install or add path to the command in settings
+    // Try to run the process and check if errorOccured() emited.
+    // If failed to start, tell the user to install dependencies or set them in settings
+    connect(convert, &QProcess::errorOccurred, [=](QProcess::ProcessError err) {
+      qDebug() << err;
+      if (err == QProcess::FailedToStart) {
+        auto ans =  QMessageBox::question(this,
+                                          tr("Failed to run convert"),
+                                          tr("Unable to run magick.exe process.\nLocate the magick.exe?"),
+                                          QMessageBox::Yes | QMessageBox::No
+                                          );
+        if (ans == QMessageBox::Yes) {
+          magickCmd = QFileDialog::getOpenFileName(this,
+                                                   tr("Locate magick.exe"),
+                                                   QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation),
+                                                   tr("Program files (*.exe)")
+                                                   );
+          if (magickCmd.isEmpty()) {
+            QMessageBox msg(this);
+            msg.setText(tr("Not setted.\nDownload and install Imagemagick to convert gifs."));
+            msg.exec();
+            magickCmd = "magick.exe"; // Set default
+          }
+        }
+      }
+    });
     convert->start(magickCmd, args);
     convert->setReadChannel(QProcess::StandardError);
     QString errors = convert->readAllStandardError();
@@ -243,17 +318,39 @@ void MainWindow::RunConvertProcess(QString gifPath, QString destPath) {
 }
 
 void MainWindow::RunGifWallpaperProcess(QString pathToWallpaper) {
-  if (gif_wallpaper != nullptr) {
-    gif_wallpaper->close();
-    delete gif_wallpaper;
-    gif_wallpaper = nullptr;
-  }
+  StopGifWallpaperProcess();
   gif_wallpaper = new QProcess();
   QStringList args;
   args << pathToWallpaper << QString::number(delayBetweenFrames);
-  qDebug(qPrintable("Running gif-wallpaper on " + pathToWallpaper + " with speed " + QString::number(delayBetweenFrames)));
   try {
-    gif_wallpaper->start(magickCmd, args);
+    // Try to run the process and check if errorOccured() emited.
+    // If failed to start, tell the user to install dependencies or set them in settings
+    connect(gif_wallpaper, &QProcess::errorOccurred, [=](QProcess::ProcessError err) {
+      qDebug() << err;
+      if (err == QProcess::FailedToStart) {
+        auto ans =  QMessageBox::question(this,
+                                          tr("Failed to run gif_wallpaper.exe"),
+                                          tr("Unable to run gw.exe process.\nLocate the gif_wallpaper?"),
+                                          QMessageBox::Yes | QMessageBox::No
+                                          );
+        if (ans == QMessageBox::Yes) {
+          gif_wallpaperCmd = QFileDialog::getOpenFileName(this,
+                                                   tr("Locate gw.exe"),
+                                                   QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation),
+                                                   tr("Program files (*.exe)")
+                                                   );
+          if (gif_wallpaperCmd.isEmpty()) {
+            QMessageBox msg(this);
+            msg.setText(tr("Not setted.\nDownload and gif_wallpaper https://github.com/wvovaw/gif_wallpaper"));
+            msg.exec();
+            gif_wallpaperCmd = "gw.exe"; // Set default
+          }
+        }
+      }
+    });
+    gif_wallpaper->start(gif_wallpaperCmd, args);
+    ui->statusbar->showMessage(tr("Current wallpaper is \"") + selectedWallpaperName.toLocal8Bit().data() + "\"");
+    qDebug(qPrintable(tr("Running gif-wallpaper on ") + pathToWallpaper + tr(" with delay ") + QString::number(delayBetweenFrames)));
     gif_wallpaper->setReadChannel(QProcess::StandardOutput);
     QString o = gif_wallpaper->readAllStandardOutput();
     qDebug() << o;
@@ -269,7 +366,7 @@ void MainWindow::ImportBMP() {
                                                tr("Image Files (*.bmp)")
                                                );
   if (bmpPathsList.isEmpty()) return;
-  auto wallpaperName = QInputDialog::getText(this, "Name this wallpaper", "Name", QLineEdit::Normal, "", nullptr, Qt::WindowFlags());
+  auto wallpaperName = QInputDialog::getText(this, tr("Name this wallpaper"), tr("Name"), QLineEdit::Normal, "", nullptr, Qt::WindowFlags());
   if (!wallpaperName.isEmpty()) {
     QDir dir = QDir(wallpapersDirectory);
     dir.setFilter(QDir::Dirs | QDir::NoSymLinks);
@@ -277,7 +374,7 @@ void MainWindow::ImportBMP() {
     QFileInfoList list = dir.entryInfoList();
     for (int i = 2; i < list.size(); ++i) {
       if (list.at(i).baseName() == wallpaperName) {
-        auto ans =  QMessageBox::question(this, "This name is already being used.", "Overwrite?", QMessageBox::Yes | QMessageBox::No);
+        auto ans =  QMessageBox::question(this, tr("This name is already being used."), tr("Overwrite?"), QMessageBox::Yes | QMessageBox::No);
         if (ans == QMessageBox::Yes) {
           // Overwrite folder
           dir.cd(wallpaperName);
@@ -312,7 +409,7 @@ void MainWindow::ImportGIF() {
                                               tr("Image Files (*.gif)")
                                               );
   if (gifPath.isEmpty()) return;
-  auto wallpaperName = QInputDialog::getText(this, "Name this wallpaper", "Name", QLineEdit::Normal, "", nullptr, Qt::WindowFlags());
+  auto wallpaperName = QInputDialog::getText(this, tr("Name this wallpaper"), tr("Name"), QLineEdit::Normal, "", nullptr, Qt::WindowFlags());
   if (!wallpaperName.isEmpty()) {
     QDir dir = QDir(wallpapersDirectory);
     dir.setFilter(QDir::Dirs | QDir::NoSymLinks);
@@ -320,7 +417,7 @@ void MainWindow::ImportGIF() {
     QFileInfoList list = dir.entryInfoList();
     for (int i = 2; i < list.size(); ++i) {
       if (list.at(i).baseName() == wallpaperName) {
-        auto ans =  QMessageBox::question(this, "This name is already being used.", "Overwrite?", QMessageBox::Yes | QMessageBox::No);
+        auto ans =  QMessageBox::question(this, tr("This name is already being used."), tr("Overwrite?"), QMessageBox::Yes | QMessageBox::No);
         if (ans == QMessageBox::Yes) {
           // Overwrite folder
           dir.cd(wallpaperName);
@@ -342,6 +439,29 @@ void MainWindow::ImportGIF() {
   }
 }
 
-void MainWindow::CheckForDependencies() {
-  // TODO: Check if gw.exe and magick.exe exitst in the PATH. Create MessageBox with corresponding info
+void MainWindow::LocateGifWallpaper() {
+  gif_wallpaperCmd = QFileDialog::getOpenFileName(this,
+                                                  tr("Locate gw.exe"),
+                                                  QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation),
+                                                  tr("Program files (*.exe)")
+                                                  );
+  if (gif_wallpaperCmd.isEmpty()) {
+    QMessageBox msg(this);
+    msg.setText(tr("Not setted.\nDownload and gif_wallpaper https://github.com/wvovaw/gif_wallpaper"));
+    msg.exec();
+    gif_wallpaperCmd = "gw.exe"; // Set default
+  }
+}
+
+void MainWindow::LocateMagick() {
+  magickCmd = QFileDialog::getOpenFileName(this, tr("Locate magick.exe"),
+                                           QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation),
+                                           tr("Program files (*.exe)")
+                                           );
+  if (magickCmd.isEmpty()) {
+    QMessageBox msg(this);
+    msg.setText(tr("Not setted.\nDownload and install Imagemagick to convert gifs."));
+    msg.exec();
+    magickCmd = "magick.exe"; // Set default
+  }
 }

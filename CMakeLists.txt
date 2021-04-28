@@ -45,6 +45,7 @@ set(PROJECT_SOURCES
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(gif-wallpaper-gui
+        WIN32
         ${PROJECT_SOURCES}
         ${APP_ICON_RESOURCE_WINDOWS}
     )
@@ -57,6 +58,7 @@ else()
         )
     else()
         add_executable(gif-wallpaper-gui
+            WIN32
             ${PROJECT_SOURCES}
         )
     endif()

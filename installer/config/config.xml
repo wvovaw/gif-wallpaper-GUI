@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Installer>
+    <Name>Gif-Wallpaper</Name>
+    <Version>1.0.0</Version>
+    <Title>Gif-Wallpaper</Title>
+    <Publisher>wvovaw</Publisher>
+    <StartMenuDir>Gif-Wallpaper</StartMenuDir>
+    <TargetDir>@HomeDir@/Gif-Wallpaper</TargetDir>
+    <CreateLocalRepository>true</CreateLocalRepository>
+    <InstallActionColumnVisible>true</InstallActionColumnVisible>
+</Installer>

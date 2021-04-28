@@ -38,7 +38,9 @@ private slots:
 
   void on_wallpapersListView_doubleClicked();
 
-  void on_speedSlider_valueChanged(int value);
+  void on_delaySlider_valueChanged(int value);
+
+  void on_removeWalpaper_clicked();
 
   /* Actions */
 
@@ -46,11 +48,13 @@ private slots:
 
   void on_actionImport_BMP_triggered();
 
-  void on_actionSettings_triggered();
-
   void on_actionHide_to_tray_triggered();
 
   void on_actionQuit_triggered();
+
+  void on_actionPath_to_Imagemagick_triggered();
+
+  void on_actionPath_to_gif_wallpaper_triggered();
 
   /* Procedures */
 
@@ -68,16 +72,24 @@ private slots:
 
   void RunGifWallpaperProcess(QString pathToWallpaper);
 
-  void CheckForDependencies();
+  void LocateGifWallpaper();
+
+  void LocateMagick();
+
+  void StopGifWallpaperProcess();
 
 private:
   Ui::MainWindow *ui;
   QProcess *gif_wallpaper = nullptr;
   QStringListModel *wallpapersListModel;
+  QListIterator<QString> *wallListIterator;
   QString wallpapersDirectory;
   QString selectedWallpaperPath;
+  QString selectedWallpaperName;
+  QString previousWallpaperPath;
+  QString nextWallpaperPath;
   QString gif_wallpaperCmd = "gw.exe";
   QString magickCmd = "magick.exe";
-  int16_t minDelay = 10, delayBetweenFrames = 60, maxDelay = 120;
+  int16_t minDelay = 10, delayBetweenFrames = 60, maxDelay = 240;
 };
 #endif // MAINWINDOW_H

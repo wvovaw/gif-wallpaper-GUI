@@ -23,15 +23,14 @@
       <property name="verticalSpacing">
        <number>11</number>
       </property>
-      <item row="0" column="0">
-       <widget class="QLabel" name="label_2">
-        <property name="text">
-         <string>Wallpapers</string>
-        </property>
-       </widget>
-      </item>
-      <item row="7" column="0">
+      <item row="3" column="1">
        <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,9,0,1">
+        <property name="leftMargin">
+         <number>6</number>
+        </property>
+        <property name="rightMargin">
+         <number>6</number>
+        </property>
         <item>
          <widget class="QLabel" name="label">
           <property name="text">
@@ -43,9 +42,12 @@
          </widget>
         </item>
         <item>
-         <widget class="QSlider" name="speedSlider">
+         <widget class="QSlider" name="delaySlider">
+          <property name="minimum">
+           <number>10</number>
+          </property>
           <property name="maximum">
-           <number>600</number>
+           <number>240</number>
           </property>
           <property name="tracking">
            <bool>true</bool>
@@ -66,12 +68,91 @@
          </widget>
         </item>
         <item>
-         <widget class="QLineEdit" name="speedEdit"/>
+         <widget class="QLineEdit" name="delayEdit">
+          <property name="layoutDirection">
+           <enum>Qt::RightToLeft</enum>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+         </widget>
         </item>
        </layout>
       </item>
-      <item row="8" column="0">
+      <item row="2" column="0">
+       <layout class="QVBoxLayout" name="verticalLayout"/>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>Wallpapers</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QListView" name="wallpapersListView">
+        <property name="font">
+         <font>
+          <pointsize>18</pointsize>
+         </font>
+        </property>
+        <property name="editTriggers">
+         <set>QAbstractItemView::NoEditTriggers</set>
+        </property>
+        <property name="spacing">
+         <number>2</number>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <layout class="QHBoxLayout" name="horizontalLayout_5">
+        <item>
+         <widget class="QPushButton" name="importFromGifButton">
+          <property name="text">
+           <string>Import as GIF</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="importBmpButton">
+          <property name="text">
+           <string>Import as BMP</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="removeWalpaper">
+          <property name="text">
+           <string>Remove wallpaper</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="10" column="1">
        <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <item>
+         <layout class="QGridLayout" name="gridLayout_4">
+          <item row="1" column="1">
+           <widget class="QPushButton" name="closeButton">
+            <property name="text">
+             <string>Exit</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QPushButton" name="toTrayButton">
+            <property name="text">
+             <string>Hide to tray</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </item>
+      <item row="4" column="1">
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
         <item>
          <layout class="QGridLayout" name="gridLayout_3">
           <item row="1" column="0">
@@ -89,49 +170,6 @@
            </widget>
           </item>
          </layout>
-        </item>
-        <item>
-         <layout class="QGridLayout" name="gridLayout_4">
-          <item row="1" column="0">
-           <widget class="QPushButton" name="closeButton">
-            <property name="text">
-             <string>Close</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0">
-           <widget class="QPushButton" name="toTrayButton">
-            <property name="text">
-             <string>Hide to tray</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-       </layout>
-      </item>
-      <item row="1" column="0">
-       <widget class="QListView" name="wallpapersListView">
-        <property name="editTriggers">
-         <set>QAbstractItemView::NoEditTriggers</set>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <layout class="QHBoxLayout" name="horizontalLayout_3">
-        <item>
-         <widget class="QPushButton" name="importBmpButton">
-          <property name="text">
-           <string>Import as BMP</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="importFromGifButton">
-          <property name="text">
-           <string>Import as GIF</string>
-          </property>
-         </widget>
         </item>
        </layout>
       </item>
@@ -159,19 +197,20 @@
      <addaction name="actionImport_GIF"/>
      <addaction name="actionImport_BMP"/>
     </widget>
+    <widget class="QMenu" name="menuSettings">
+     <property name="title">
+      <string>Settings</string>
+     </property>
+     <addaction name="actionPath_to_Imagemagick"/>
+     <addaction name="actionPath_to_gif_wallpaper"/>
+    </widget>
     <addaction name="menuAdd_wallpapers"/>
-    <addaction name="actionSettings"/>
+    <addaction name="menuSettings"/>
     <addaction name="actionHide_to_tray"/>
     <addaction name="separator"/>
     <addaction name="actionQuit"/>
    </widget>
-   <widget class="QMenu" name="menuAbout">
-    <property name="title">
-     <string>About</string>
-    </property>
-   </widget>
    <addaction name="menuMenu"/>
-   <addaction name="menuAbout"/>
   </widget>
   <widget class="QStatusBar" name="statusbar">
    <property name="sizeGripEnabled">
@@ -198,9 +237,14 @@
     <string>Import BMP</string>
    </property>
   </action>
-  <action name="actionSettings">
+  <action name="actionPath_to_Imagemagick">
    <property name="text">
-    <string>Settings</string>
+    <string>Path to Imagemagick</string>
+   </property>
+  </action>
+  <action name="actionPath_to_gif_wallpaper">
+   <property name="text">
+    <string>Path to gif-wallpaper</string>
    </property>
   </action>
  </widget>
