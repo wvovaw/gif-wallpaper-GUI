@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<Package>
+    <DisplayName>SDL2 library</DisplayName>
+    <Description>Gif-Wallpaper's dependency. Install it if you don't have it.
+Simple DirectMedia Layer is a cross-platform development library designed to provide low level access to audio, keyboard, mouse, joystick, and graphics hardware via OpenGL and Direct3D. It is used by video playback software, emulators, and popular games including Valve's award winning catalog and many Humble Bundle games.</Description>
+    <Version>2.0.14</Version>
+    <ReleaseDate>2020-04-28</ReleaseDate>
+    <Licenses>
+      <License name="Zlib License" file="ZLIB.txt"/>
+    </Licenses>
+</Package>

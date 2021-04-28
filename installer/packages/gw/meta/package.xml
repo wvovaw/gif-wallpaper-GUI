@@ -3,6 +3,7 @@
     <DisplayName>Gif-Wallpaper</DisplayName>
     <Description>CLI tool that set gifs (convert them to bmps first) as wallpapers</Description>
     <Version>1.0.0</Version>
+    <ReleaseDate>2020-04-28</ReleaseDate>
     <Licenses>
       <License name="MIT License" file="MIT.txt"/>
     </Licenses>

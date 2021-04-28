@@ -3,6 +3,7 @@
     <DisplayName>Gif-Wallpaper GUI</DisplayName>
     <Description>GUI cilent for gif-wallpaper</Description>
     <Version>1.0.0</Version>
+    <ReleaseDate>2020-04-28</ReleaseDate>
     <Licenses>
       <License name="Do What The Fuck You Want To Public License" file="WTFPL.txt"/>
     </Licenses>
