@@ -5,7 +5,7 @@
 >Set GIFS as a wallpaper on Windows
 
 ### TLDR
-![demo.gif](https://s3.gifyu.com/images/Animation736560311e550b31.gif)
+![demo.gif](demo.gif)
 
 Download [installer](https://github.com/wvovaw/gw-GUI/releases) or [zip](https://github.com/wvovaw/gw-GUI/releases) and run.
 
